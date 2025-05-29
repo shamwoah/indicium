@@ -1,7 +1,11 @@
 import csv
 import json
+from pathlib import Path
 
-with open('HalluQA.csv', mode='r', encoding='utf-8') as file:
+p = str(Path(__file__).parent.parent)
+
+path = p + '/dataset/HalluQA.csv'
+with open(path, mode='r', encoding='utf-8') as file:
     reader = csv.DictReader(file)
     rows = list(reader)
 
@@ -34,6 +38,7 @@ for row in rows:
     tasks.append(task)
     i += 1
 
-with open('more_tasks.jsonl', 'w') as f:
+path = p + '/batches_and_tasks/more_tasks.jsonl'
+with open(path, mode='w') as f:
     for obj in tasks:
         f.write(json.dumps(obj) + '\n')
