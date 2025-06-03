@@ -1,12 +1,17 @@
 import json
 import csv
+from pathlib import Path
 
+p = str(Path(__file__).parent.parent)
+
+path = p + '/batches_and_tasks/detection_tests.jsonl'
 results = []
-with open('detection_tests.jsonl', mode='r') as file:
+with open(path, mode='r') as file:
     for line in file:
         results.append(json.loads(line.strip()))
 
-with open('HalluQA.csv', mode='r', encoding='utf-8') as file:
+path = p + '/dataset/HalluQA.csv'
+with open(path, mode='r', encoding='utf-8') as file:
     reader = csv.DictReader(file)
     rows = list(reader)
 
@@ -50,5 +55,6 @@ metrics = {
     'f1-score': f_score
 }
 
-with open('metrics.jsonl', mode='w') as file:
+path = p + '/data/metrics.jsonl'
+with open(path, mode='w') as file:
     file.write(json.dumps(metrics))
