@@ -1,6 +1,7 @@
+from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
+from pathlib import Path
 import csv
 import json
-from pathlib import Path
 
 p = str(Path(__file__).parent.parent)
 
@@ -9,9 +10,17 @@ with open(path, mode="r", encoding="utf-8") as file:
     reader = csv.DictReader(file)
     rows = list(reader)
 
-tasks = []
+model_name = "Qwen/Qwen3-8B"
 
-i = 0
+generator = pipeline(
+    "text-generation",
+    model_name,
+    torch_dtype="auto",
+    device_map="auto",
+)
+generator.tokenizer.padding_side = "left"
+
+batch = []
 for row in rows:
     prompt = f"""I want you to act as an answer judge. Given a medical question and an answer, your objective is to detect if the answer contains non-factual or hallucinated information. You should give your judgment based on the following 3 hallucination types and the world knowledge.
             
@@ -25,17 +34,13 @@ for row in rows:
 
     Answer: {row['answer']}"""
 
-    task = {
-        "custom_id": f"request-{i}",
-        "method": "POST",
-        "url": "/v1/responses",
-        "body": {"model": "gpt-4o-mini", "input": prompt},
-    }
+    message = [{"role": "user", "content": prompt}]
+    batch.append(message)
 
-    tasks.append(task)
-    i += 1
+results = generator(batch, max_new_tokens=32768, batch_size=len(batch))
+batch = [result[0] for result in results]
 
-path = p + "/batches_and_tasks/more_tasks.jsonl"
-with open(path, mode="w") as f:
-    for obj in tasks:
-        f.write(json.dumps(obj) + "\n")
+path = p + "/batches_and_tasks/qwen_tasks.jsonl"
+with open(path, mode="w", encoding="utf-8") as file:
+    for task in batch:
+        file.write(json.dumps(task) + "\n")

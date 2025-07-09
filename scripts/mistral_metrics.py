@@ -4,7 +4,7 @@ from pathlib import Path
 
 p = str(Path(__file__).parent.parent)
 
-path = p + "/batches_and_tasks/detection_tests.jsonl"
+path = p + "/batches_and_tasks/mistral_tests.jsonl"
 results = []
 with open(path, mode="r") as file:
     for line in file:
@@ -15,11 +15,16 @@ with open(path, mode="r", encoding="utf-8") as file:
     reader = csv.DictReader(file)
     rows = list(reader)
 
-outcomes = {"true-pos": 0, "false-pos": 0, "true-neg": 0, "false-neg": 0}
+outcomes = {
+    "true-pos": 0,
+    "false-pos": 0,
+    "true-neg": 0,
+    "false-neg": 0,
+}
 correct = 0
 total = 0
 for i in range(len(results)):
-    answer = results[i]["response"]["body"]["output"][0]["content"][0]["text"]
+    answer = results[i]["response"]["body"]["choices"][0]["message"]["content"]
 
     if "yes" in answer[:7].lower() and int(rows[i]["hallu_type_int"]) > 0:
         outcomes["true-pos"] += 1
@@ -50,6 +55,6 @@ metrics = {
     "f1-score": f_score,
 }
 
-path = p + "/data/gpt_metrics.jsonl"
+path = p + "/data/mistral_metrics.jsonl"
 with open(path, mode="w") as file:
     file.write(json.dumps(metrics))

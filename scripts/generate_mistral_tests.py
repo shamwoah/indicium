@@ -26,16 +26,21 @@ for row in rows:
     Answer: {row['answer']}"""
 
     task = {
-        "custom_id": f"request-{i}",
-        "method": "POST",
-        "url": "/v1/responses",
-        "body": {"model": "gpt-4o-mini", "input": prompt},
+        "custom_id": str(i),
+        "body": {
+            "messages": [
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            ]
+        },
     }
 
     tasks.append(task)
     i += 1
 
-path = p + "/batches_and_tasks/more_tasks.jsonl"
-with open(path, mode="w") as f:
-    for obj in tasks:
-        f.write(json.dumps(obj) + "\n")
+path = p + "/batches_and_tasks/mistral_tasks.jsonl"
+with open(path, mode="w", encoding="utf-8") as file:
+    for task in tasks:
+        file.write(json.dumps(task) + "\n")
